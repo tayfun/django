@@ -38,6 +38,34 @@ class BaseFinder(object):
         raise NotImplementedError()
 
 
+class CachedFilesFinder(BaseFinder):
+    """
+    A static files finder that uses ``STATIC_ROOT`` setting to find cached
+    files which have file content hash in their name.
+    """
+    def find(self, path, all=False):
+        """
+        Simply checks if the given cached file exists, if the file exists,
+        its path will be returned so that it can be served.
+        """
+        path = safe_join(settings.STATIC_ROOT, path)
+        if os.path.exists(path):
+            if not all:
+                return path
+            else:
+                return [path]
+        else:
+            return []
+
+    def list(self, ignore_patterns):
+        """
+        This Finder shouldn't return any file list, its only purpose is to
+        provide collected and cached files, ie. this finder will not be used
+        in collectstatic.
+        """
+        return []
+
+
 class FileSystemFinder(BaseFinder):
     """
     A static files finder that uses the ``STATICFILES_DIRS`` setting
